@@ -1,0 +1,81 @@
+disp(sprintf(['\nComparison of different methods (Newton, Broyden, gradient descent, combination)\n'...
+    'for the microwave oven example from slides,i.e.,\n'...
+    'we are searching for the solution of the system:\n\n'...
+    'f1(x(1),x(2),x(3)):=x(1)/((1+sqrt(x(2)^2+x(3)^2)))-0.27=0,\n'...
+    'f2(x(1),x(2),x(3)):=x(1)/(1+sqrt((1-x(2))^2+(1-x(3))^2))-0.36=0,\n'...
+    'f3(x(1),x(2),x(3)):=x(1)/(1+sqrt(x(2)^2+(2-x(3))^2))-0.3=0.\n']))
+pause
+
+F=inline('[ x(1)/((1+sqrt(x(2)^2+x(3)^2)))-0.27; x(1)/(1+sqrt((1-x(2))^2+(1-x(3))^2))-0.36; x(1)/(1+sqrt(x(2)^2+(2-x(3))^2))-0.3]');
+
+% Jacobi matrix
+disp(sprintf(['\nFor Newton method with need the Jacobi matrix, i.e.:\n\n']))
+pause
+disp(sprintf(['der(f1,x(1))=1/(1+sqrt(x(2)^2+x(3)^2)),\n'...
+    'der(f1,x(2))=-x(1)*x(2)/(1+sqrt(x(2)^2+x(3)^2))^2/sqrt(x(2)^2+x(3)^2),\n'...
+    'der(f1,x(3))=-x(1)*x(3)/(1+sqrt(x(2)^2+x(3)^2))^2/sqrt(x(2)^2+x(3)^2 ),\n\n',...
+    'der(f2,x(1))=1/(1+sqrt((1-x(2))^2+(1-x(3))^2)),\n'...
+    'der(f2,x(2))=x(1)*x(2)/(1+sqrt((1-x(2))^2+(1-x(3))^2))^2/sqrt((1-x(2))^2+(1-x(3))^2),\n'...
+    'der(f2,x(3))=x(1)*x(3)/(1+sqrt((1-x(2))^2+(1-x(3))^2))^2/sqrt((1-x(2))^2+(1-x(3))^2 ),\n\n',...
+    'der(f3,x(1))=1/(1+sqrt(x(2)^2+(2-x(3))^2)),\n'...
+    'der(f3,x(2))=-x(1)*x(2)/(1+sqrt(x(2)^2+(2-x(3))^2))^2/sqrt(x(2)^2+(2-x(3))^2),\n'...
+    'der(f3,x(3))=x(1)*x(3)/(1+sqrt(x(2)^2+(2-x(3))^2))^2/sqrt(x(2)^2+(2-x(3))^2 )].\n']));
+
+JF=inline(strcat(...
+  '[ 1/(1+sqrt(x(2)^2+x(3)^2)), -x(1)*x(2)/(1+sqrt(x(2)^2+x(3)^2))^2/sqrt(x(2)^2+x(3)^2),-x(1)*x(3)/(1+sqrt(x(2)^2+x(3)^2))^2/sqrt(x(2)^2+x(3)^2 );',...
+  ' 1/(1+sqrt((1-x(2))^2+(1-x(3))^2)), x(1)*x(2)/(1+sqrt((1-x(2))^2+(1-x(3))^2))^2/sqrt((1-x(2))^2+(1-x(3))^2),x(1)*x(3)/(1+sqrt((1-x(2))^2+(1-x(3))^2))^2/sqrt((1-x(2))^2+(1-x(3))^2 );',...
+  '1/(1+sqrt(x(2)^2+(2-x(3))^2)), -x(1)*x(2)/(1+sqrt(x(2)^2+(2-x(3))^2))^2/sqrt(x(2)^2+(2-x(3))^2),x(1)*x(3)/(1+sqrt(x(2)^2+(2-x(3))^2))^2/sqrt(x(2)^2+(2-x(3))^2 )]'));
+
+pause
+x0=[0.8;0.8;0.8];
+disp(sprintf('Newton metod with x0=[%3.1f, %3.1f,%3.1f].',x0(1),x0(2),x0(3)))
+pause()
+x1=newtonsys(F,JF,x0);
+pause()
+disp(sprintf('\n'))
+B0=eye(3);
+disp(sprintf('Broyden metod with x0=[%3.1f, %3.1f,%3.1f] and',x0(1),x0(2),x0(3)))
+B0
+pause()
+disp(sprintf('\n'))
+x1=broyden(F,B0,x0);
+disp(sprintf('\n'))
+pause()
+B0=JF(x0);
+disp(sprintf('Broyden metod with x0=[%3.1f, %3.1f,%3.1f] and',x0(1),x0(2),x0(3)))
+B0
+pause()
+x1=broyden(F,B0,x0);
+disp(sprintf('\n'))
+pause()
+clear x
+g=inline('( x(1)/(1+sqrt(x(2)^2+x(3)^2))-0.27)^2+ (x(1)/(1+sqrt((1-x(2))^2+(1-x(3))^2))-0.36)^2+(x(1)/(1+sqrt(x(2)^2+(2-x(3))^2))-0.3)^2');
+gradg=inline(strcat('[2*(x(1)/(1+sqrt(x(2)^2+x(3)^2))-0.27)*1/(1+sqrt(x(2)^2+x(3)^2))+2*(x(1)/(1+sqrt((1-x(2))^2+(1-x(3))^2))-0.36)*1/(1+sqrt((1-x(2))^2+(1-x(3))^2))+2*(x(1)/(1+sqrt(x(2)^2+(2-x(3))^2))-0.3)*1/(1+sqrt(x(2)^2+(2-x(3))^2));',...
+            ' 2*(x(1)/(1+sqrt(x(2)^2+x(3)^2))-0.27)*( -x(1)*x(2)/(1+sqrt(x(2)^2+x(3)^2))^2/sqrt(x(2)^2+x(3)^2))+2*(x(1)/(1+sqrt((1-x(2))^2+(1-x(3))^2))-0.36)*x(1)*x(2)/(1+sqrt((1-x(2))^2+(1-x(3))^2))^2/sqrt((1-x(2))^2+(1-x(3))^2)+2*(x(1)/(1+sqrt(x(2)^2+(2-x(3))^2))-0.3)*(-x(1)*x(2)/(1+sqrt(x(2)^2+(2-x(3))^2))^2/sqrt(x(2)^2+(2-x(3))^2));',...
+            ' 2*(x(1)/(1+sqrt(x(2)^2+x(3)^2))-0.27)*(-x(1)*x(3)/(1+sqrt(x(2)^2+x(3)^2))^2/sqrt(x(2)^2+x(3)^2))+2*(x(1)/(1+sqrt((1-x(2))^2+(1-x(3))^2))-0.36)*x(1)*x(3)/(1+sqrt((1-x(2))^2+(1-x(3))^2))^2/sqrt((1-x(2))^2+(1-x(3))^2 )+2*(x(1)/(1+sqrt(x(2)^2+(2-x(3))^2))-0.3)*x(1)*x(3)/(1+sqrt(x(2)^2+(2-x(3))^2))^2/sqrt(x(2)^2+(2-x(3)))^2]'));
+disp(sprintf('\n'))
+disp(sprintf('Gradient descent method with x0=[%3.1f, %3.1f,%3.1f].',x0(1),x0(2),x0(3)))
+pause()
+disp(sprintf(['The function is g=f1^2+f2^2+f3^2.\n\n']))
+disp(sprintf(['We need to compute the gradient of g:\n\n'...
+    'der(g,x(1))=2*f1*der(f1,x(1))+2*f2*der(f2,x(1))+2*f3*der(f3,x(1)),\n'...
+    'der(g,x(2))=2*f1*der(f1,x(2))+2*f2*der(f2,x(2))+2*f3*der(f3,x(2)),\n'...
+    'der(g,x(3))=2*f1*der(f1,x(3))+2*f2*der(f2,x(3))+2*f3*der(f3,x(3)).']))
+x=gradient_descent(g,gradg,x0)  
+disp(sprintf('\n'))
+pause()           
+x0=[3;3;3];
+disp(sprintf('\n'))
+disp(sprintf('Newton metod with x0=[%3.1f, %3.1f,%3.1f].',x0(1),x0(2),x0(3)))
+pause()
+x1=newtonsys(F,JF,x0);
+pause()
+disp(sprintf('\n'))
+disp(sprintf('Gradient descent metod with x0=[%3.1f, %3.1f,%3.1f].',x0(1),x0(2),x0(3)))
+pause()
+x0=gradient_descent(g,gradg,x0)       
+pause()
+disp(sprintf('\n'))
+disp(sprintf('Newton metod with x0=[%3.1f, %3.1f,%3.1f].',x0(1),x0(2),x0(3)))
+pause()
+x1=newtonsys(F,JF,x0);      
